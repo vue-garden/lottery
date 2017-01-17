@@ -20,7 +20,7 @@
       </el-row>
     </section>
 
-    <el-dialog title="💐 抽奖结果" v-model="resultsVisible" custom-class="result" v-on:close="dialogClosed">
+    <el-dialog title="💐 抽奖结果" v-model="resultsVisible" custom-class="result" v-on:close="dialogClosed" v-bind:show-close="false" v-bind:close-on-click-modal="false" v-bind:close-on-press-escape="false">
       <h1>
         👏💐 恭喜
         🎁 <span style="font-size: 18px; color: #000;">{{ $route.query.name }}</span>
@@ -29,6 +29,9 @@
       <h1><span style="font-size: 18px; color: #000;">{{ player.name }}</span></h1>
       <div class="img-wrap">
         <img v-bind:src="'local://' + player.photoSrc">
+      </div>
+      <div class="btns">
+        <el-button type="success" v-on:click="$router.back()">完成</el-button>
       </div>
     </el-dialog>
     <audio id="bkgMp3" v-bind:src="bkgMp3Url"></audio>
@@ -278,5 +281,10 @@ export default {
 .viewport.prize-run .result .img-wrap img {
   width: 100%;
   vertical-align: middle;
+}
+
+.viewport.prize-run .result .btns {
+  margin-top: 20px;
+  text-align: center;
 }
 </style>
