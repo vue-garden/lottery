@@ -55,6 +55,14 @@ let config = {
           limit: 10000,
           name: 'fonts/[name].[hash:7].[ext]'
         }
+      },
+      {
+        test: /\.(wav|mp3|mp4)(\?.*)?$/,
+        loader: 'url-loader',
+        query: {
+          limit: 10000,
+          name: 'multimedia/[name].[hash:7].[ext]'
+        }
       }
     ]
   },

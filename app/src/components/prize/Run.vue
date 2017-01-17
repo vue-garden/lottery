@@ -20,7 +20,7 @@
       </el-row>
     </section>
 
-    <el-dialog title="💐 抽奖结果" v-model="resultsVisible" custom-class="result">
+    <el-dialog title="💐 抽奖结果" v-model="resultsVisible" custom-class="result" v-on:close="dialogClosed">
       <h1>
         👏💐 恭喜
         🎁 <span style="font-size: 18px; color: #000;">{{ $route.query.name }}</span>
@@ -31,6 +31,8 @@
         <img v-bind:src="'local://' + player.photoSrc">
       </div>
     </el-dialog>
+    <audio id="bkgMp3" v-bind:src="bkgMp3Url"></audio>
+    <audio id="cheeringMp3" v-bind:src="cheeringMp3Url"></audio>
   </div>
 </div>
 </template>
@@ -45,6 +47,9 @@ import {
   Loading
 } from 'element-ui'
 
+import bkgMp3 from '../../assets/multimedia/soda_pop.mp3'
+import cheeringMp3 from '../../assets/multimedia/cheering.mp3'
+
 export default {
   data() {
     return {
@@ -54,7 +59,18 @@ export default {
       timer: 0,
       resultsVisible: false,
       player: {},
-      prize: {}
+      prize: {},
+
+      bkgMp3Url: bkgMp3,
+      cheeringMp3Url: cheeringMp3
+    }
+  },
+  computed: {
+    bkgMp3() {
+      return document.getElementById('bkgMp3')
+    },
+    cheeringMp3() {
+      return document.getElementById('cheeringMp3')
     }
   },
   mounted() {
@@ -122,9 +138,12 @@ export default {
         array[rIdx] = tmp
       }
     },
+    random(min, max) {
+      return Math.random() * (max - min) + min
+    },
     lottery() {
       let len = this.players.length
-      let loop = Math.floor(len * 1.5)
+      let loop = Math.floor(len * this.random(1.5, 3))
 
       return new Promise((resolve) => {
         let anima = () => {
@@ -150,6 +169,8 @@ export default {
         }
         setTimeout(() => {
           this.$message.info('开始抽奖')
+          this.bkgMp3.play()
+
           this.lottery().then(() => {
             let rId = Math.floor(Math.random() * this.players.length)
             this.players.every((player) => {
@@ -167,11 +188,16 @@ export default {
             }).catch((err) => {
               this.$message.error('错误: ' + err.message)
             }).then(() => {
+              this.bkgMp3.pause()
+              this.cheeringMp3.play()
               this.resultsVisible = true
             })
           })
         }, 1500)
       })
+    },
+    dialogClosed() {
+      this.cheeringMp3.pause()
     }
   }
 }
