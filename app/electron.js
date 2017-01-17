@@ -4,8 +4,9 @@ const electron = require('electron')
 const path = require('path')
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
-
 const fs = require('fs')
+const Menu = electron.Menu
+const dialog = electron.dialog
 
 const afs = {
   readFile: function(file, options = null) {
@@ -88,6 +89,71 @@ function createDataFiles() {
 }
 
 function createWindow() {
+  let template = [
+    {
+      label: 'Application',
+      submenu: [
+        {
+          label: 'About',
+          click: function() {
+            dialog.showMessageBox({
+              type: 'info',
+              icon: null,
+              message: 'A little 🎁 lottery soft written by hsiaosiyuan0'
+            })
+          }
+        },
+        {
+          label: 'Quit',
+          accelerator: 'Command+Q',
+          click: function() {
+            app.quit()
+          }
+        }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'Undo',
+          accelerator: 'CmdOrCtrl+Z',
+          selector: 'undo:'
+        },
+        {
+          label: 'Redo',
+          accelerator: 'Shift+CmdOrCtrl+Z',
+          selector: 'redo:'
+        },
+        {
+          type: 'separator'
+        },
+        {
+          label: 'Cut',
+          accelerator: 'CmdOrCtrl+X',
+          selector: 'cut:'
+        },
+        {
+          label: 'Copy',
+          accelerator: 'CmdOrCtrl+C',
+          selector: 'copy:'
+        },
+        {
+          label: 'Paste',
+          accelerator: 'CmdOrCtrl+V',
+          selector: 'paste:'
+        },
+        {
+          label: 'Select All',
+          accelerator: 'CmdOrCtrl+A',
+          selector: 'selectAll:'
+        }
+      ]
+    }
+  ]
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+
   /**
    * Initial window options
    */
