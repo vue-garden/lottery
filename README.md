@@ -4,8 +4,9 @@
 
 ## Showcase
 
-[自动版 - branch master](http://og9g58alt.bkt.clouddn.com/lottery.gif)
-[手动版 - branch manual](http://og9g58alt.bkt.clouddn.com/lottery2.gif)
+* [自动版 - branch master](http://og9g58alt.bkt.clouddn.com/lottery.gif)
+
+* [手动版 - branch manual](http://og9g58alt.bkt.clouddn.com/lottery2.gif)
 
 ## Build Setup
 
