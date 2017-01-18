@@ -1,10 +1,11 @@
-# lottery
+# Lottery
 
 🎁 抽奖小程序
 
-## showcase
+## Showcase
 
-![Alt text](http://og9g58alt.bkt.clouddn.com/lottery.gif)
+[自动版 - branch master](http://og9g58alt.bkt.clouddn.com/lottery.gif)
+[手动版 - branch manual](http://og9g58alt.bkt.clouddn.com/lottery2.gif)
 
 ## Build Setup
 
@@ -12,20 +13,16 @@
 # install dependencies
 npm install
 
-# serve with hot reload at localhost:9080
-npm run dev
-
-# build electron app for production
-npm run build
-
-# lint all JS/Vue component files in `app/src`
-npm run lint
-
-# run webpack in production
-npm run pack
+# builds for macOS
+npm run build:darwi
 ```
-More information can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/docs/npm_scripts.html).
+More information can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/).
 
 ---
 
-This project was generated from [electron-vue](https://github.com/SimulatedGREG/electron-vue) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about this project can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).
+## Thanks
+
+* [Electron](http://electron.atom.io/)
+* [Vue.js](https://vuejs.org/)
+* [Element](http://element.eleme.io/)
+* [electron-vue](https://github.com/SimulatedGREG/electron-vue)
