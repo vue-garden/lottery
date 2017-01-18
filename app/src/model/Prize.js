@@ -3,6 +3,7 @@ import path from 'path'
 import fs from '../lib/fs'
 import config from '../config'
 import uuid from 'uuid/v4'
+import mime from 'mime'
 
 let list = null
 
@@ -120,7 +121,13 @@ export default class Prize {
         let parsed = path.parse(file)
 
         let outPath = path.join(config.photosDir, uuid() + parsed.ext)
-        await fs.readImageAndAutoOrient(file, outPath)
+
+        let b = await fs.readFile(file)
+        let ab = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)
+        let blob = new Blob([ab], {
+          type: mime.lookup(file)
+        })
+        await fs.readImageAndAutoOrient(blob, outPath)
 
         let [prizeName, giftName, giftPrice] = parsed.name.split('@')
         if (!giftName) {
@@ -144,13 +151,9 @@ export default class Prize {
           reason: err.message
         })
       }
-      if (cbProgress) {
-        cbProgress((i + 1) / len)
-      }
+      cbProgress && cbProgress((i + 1) / len)
     }
-    if (cbProgress) {
-      cbProgress(1)
-    }
+    cbProgress && cbProgress(1)
     return ret
   }
 }

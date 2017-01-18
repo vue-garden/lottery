@@ -20,17 +20,10 @@
 </template>
 
 <script>
-import {
-  readAsArrayBuffer
-} from '../lib/h5-async-file-reader'
-
+import fs from '../lib/fs'
 import path from 'path'
 import config from '../config'
 import uuid from 'uuid/v4'
-
-const gm = require('gm').subClass({
-  imageMagick: true
-})
 
 export default {
   props: {
@@ -55,22 +48,17 @@ export default {
       this.inputElem = evt.target
       this.file = evt.target.files[0]
 
-      readAsArrayBuffer(this.file).then((buf) => {
-        let dot = this.file.name.lastIndexOf('.')
-        let ext = this.file.name.slice(dot + 1)
-        let to = path.join(config.photosDir, uuid() + '.' + ext)
-        buf = Buffer.from(buf)
-        gm(buf, this.file.name).autoOrient().write(to, (err) => {
-          if (err) throw err
+      let dot = this.file.name.lastIndexOf('.')
+      let ext = this.file.name.slice(dot + 1)
+      let dst = path.join(config.photosDir, uuid() + '.' + ext)
 
-          this.dataUrl = to
+      fs.readImageAndAutoOrient(this.file, dst).then(() => {
+        this.dataUrl = dst
 
-          let src = this.file.name
-          let dst = to
-          this.cbChanged({
-            src,
-            dst
-          })
+        let src = this.file.name
+        this.cbChanged({
+          src,
+          dst
         })
       })
     },

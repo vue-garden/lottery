@@ -127,12 +127,14 @@ export default {
         this.importProgress = 0
         this.importDone = false
         Player.importFromDir(files[0], (progress) => {
-          this.importProgress = progress * 100
+          this.importProgress = parseFloat((progress * 100).toFixed(2))
         }).then((result) => {
           this.importResult = result
           this.importDialogClosable = true
           this.importDone = true
           this.loadList()
+        }).catch((err) => {
+          this.$message.error('错误: ' + err.message)
         })
       })
     }
