@@ -71,7 +71,9 @@ export default class Prize {
     if (isNameExist) {
       throw new Error('奖项名称已存在')
     } else {
-      json.giftPhotoSrc = await Prize.savePhoto(json.giftPhotoDataUrl, json.giftPhotoExt)
+      if (json.giftPhotoDataUrl) {
+        json.giftPhotoSrc = await Prize.savePhoto(json.giftPhotoDataUrl, json.giftPhotoExt)
+      }
       let prizes = await this.loadList()
       prizes.push(Prize.fromDict(json))
       list = prizes
@@ -104,5 +106,52 @@ export default class Prize {
 
   async save() {
     await Prize.sync()
+  }
+
+  static async importFromDir(dir, cbProgress) {
+    let files = await fs.readdir(dir)
+    let ret = {
+      success: 0,
+      failed: []
+    }
+    for (let i = 0, len = files.length; i < len; i++) {
+      let file = path.join(dir, files[i])
+      try {
+        let fileData = await fs.readFile(file)
+        let parsed = path.parse(file)
+
+        let outPath = path.join(config.photosDir, uuid() + parsed.ext)
+        await fs.writeFile(outPath, fileData)
+
+        let [prizeName, giftName, giftPrice] = parsed.name.split('@')
+        if (!giftName) {
+          throw new Error('缺少礼品名称')
+        }
+        if (!giftPrice) {
+          throw new Error('缺少礼品价格')
+        }
+
+        let prize = this.fromDict({
+          name: prizeName,
+          giftName,
+          giftPrice,
+          giftPhotoSrc: outPath
+        })
+        await this.add(prize)
+        ret.success++
+      } catch (err) {
+        ret.failed.push({
+          file: files[i],
+          reason: err.message
+        })
+      }
+      if (cbProgress) {
+        cbProgress((i + 1) / len)
+      }
+    }
+    if (cbProgress) {
+      cbProgress(1)
+    }
+    return ret
   }
 }

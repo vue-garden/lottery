@@ -97,4 +97,37 @@ export default class Player {
     await fs.writeFile(filePath, buf)
     return filePath
   }
+
+  static async importFromDir(dir, cbProgress) {
+    let files = await fs.readdir(dir)
+    let ret = {
+      success: 0,
+      failed: []
+    }
+    for (let i = 0, len = files.length; i < len; i++) {
+      let file = path.join(dir, files[i])
+      try {
+        let fileData = await fs.readFile(file)
+        let parsed = path.parse(file)
+
+        let outPath = path.join(config.photosDir, uuid() + parsed.ext)
+        await fs.writeFile(outPath, fileData)
+
+        await this.add(parsed.name, outPath)
+        ret.success++
+      } catch (err) {
+        ret.failed.push({
+          file: files[i],
+          reason: err.message
+        })
+      }
+      if (cbProgress) {
+        cbProgress((i + 1) / len)
+      }
+    }
+    if (cbProgress) {
+      cbProgress(1)
+    }
+    return ret
+  }
 }

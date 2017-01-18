@@ -8,16 +8,24 @@
     </el-breadcrumb>
 
     <section class="info">
-      <h2>🎁 {{ prize.name }}: <span style="margin-left: 10px;">{{ prize.giftName }}</span></h2>
+      <h2 style="text-align: center;">
+        <span class="gift-icon">🎁</span>
+        {{ prize.name }}:
+        <span style="margin-left: 10px;">{{ prize.giftName }}</span>
+      </h2>
     </section>
 
     <section class="players">
-      <h2>参与者:</h2>
-      <el-row :gutter="10" type="flex" justify="space-between" v-for="(row, idx) in rows">
-        <el-col :span="2" v-for="col in row">
-          <img v-bind:src="'local://' + col.photoSrc" v-bind:id="'p-' + col.id" v-bind:title="col.name" v-on:load="showAvatar($event)">
-        </el-col>
-      </el-row>
+      <div class="photos">
+        <div class="img-wrap" v-for="player in players" v-bind:id="'iw-' + player.id">
+          <img v-bind:src="'local://' + player.photoSrc">
+        </div>
+      </div>
+    </section>
+
+    <section class="tips clearfix">
+      <span style="float: left;">按下 Space 暂停/继续</span>
+      <span style="float: right;">按下 Enter 结束</span>
     </section>
 
     <el-dialog title="💐 抽奖结果" v-model="resultsVisible" custom-class="result" v-on:close="dialogClosed" v-bind:show-close="false" v-bind:close-on-click-modal="false" v-bind:close-on-press-escape="false">
@@ -26,12 +34,12 @@
         🎁 <span style="font-size: 18px; color: #000;">{{ $route.query.name }}</span>
         得主
       </h1>
-      <h1><span style="font-size: 18px; color: #000;">{{ player.name }}</span></h1>
       <div class="img-wrap">
         <img v-bind:src="'local://' + player.photoSrc">
       </div>
-      <div class="btns">
-        <el-button type="success" v-on:click="$router.back()">完成</el-button>
+      <h1 style="margin-top: 20px;"><span style="font-size: 18px; color: #000;">{{ showPlayerName ? player.name : '******' }}</span></h1>
+      <div style="margin-top: 10px; text-align: center; font-size: 13px; color: #99A9BF;">
+        {{ showPlayerName ? '按下 Enter 结束' : '按下 Enter 显示姓名' }}
       </div>
     </el-dialog>
     <audio id="bkgMp3" v-bind:src="bkgMp3Url"></audio>
@@ -50,22 +58,27 @@ import {
   Loading
 } from 'element-ui'
 
-import bkgMp3 from '../../assets/multimedia/soda_pop.mp3'
+import bkgMp3 from '../../assets/multimedia/SUGAR.mp3'
 import cheeringMp3 from '../../assets/multimedia/cheering.mp3'
 
 export default {
   data() {
     return {
       players: [],
-      rows: [],
       id: 0,
       timer: 0,
       resultsVisible: false,
       player: {},
       prize: {},
 
+      paused: false,
+      lastElem: null,
+
       bkgMp3Url: bkgMp3,
-      cheeringMp3Url: cheeringMp3
+      cheeringMp3Url: cheeringMp3,
+
+      done: false,
+      showPlayerName: false
     }
   },
   computed: {
@@ -78,9 +91,14 @@ export default {
   },
   mounted() {
     this.loadPrize().then(() => {
-      console.log(1)
+      this.registerKeyboard()
       this.run()
     })
+  },
+  beforeRouteLeave(to, from, next) {
+    this.pause()
+    this.unregisterKeyboard()
+    next()
   },
   methods: {
     loadPrize() {
@@ -94,26 +112,12 @@ export default {
         text: '正在随机分配坐席'
       })
 
-      let row = []
       return Player.loadRemainList().then((list) => {
         this.shuffle(list)
         this.players = list
-        let rows = []
-        list.forEach((player) => {
-          player.id = this.id
-
-          if (row.length < 12) {
-            row.push(player)
-          } else {
-            rows.push(row)
-            row = [player]
-          }
-
-          this.id++
+        this.players.forEach((player) => {
+          player.id = this.id++
         })
-        if (row.length) {
-          rows.push(row)
-        }
 
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -121,7 +125,6 @@ export default {
               fullscreen: true
             }).close()
             this.$message.success('坐席已随机分配')
-            this.$set(this, 'rows', rows)
             resolve()
           }, 2000)
         })
@@ -141,29 +144,6 @@ export default {
         array[rIdx] = tmp
       }
     },
-    random(min, max) {
-      return Math.random() * (max - min) + min
-    },
-    lottery() {
-      let len = this.players.length
-      let loop = Math.floor(len * this.random(1.5, 3))
-
-      return new Promise((resolve) => {
-        let anima = () => {
-          if (loop) {
-            let rId = Math.floor(Math.random() * len)
-            $(`#p-${rId}`).animateCss('rubberBand').then(() => {
-              loop--
-              setTimeout(anima, 100)
-            })
-          } else {
-            resolve()
-          }
-        }
-
-        anima()
-      })
-    },
     run() {
       this.loadPlayers().then(() => {
         if (this.players.length === 0) {
@@ -172,35 +152,110 @@ export default {
         }
         setTimeout(() => {
           this.$message.info('开始抽奖')
-          this.bkgMp3.play()
-
-          this.lottery().then(() => {
-            let rId = Math.floor(Math.random() * this.players.length)
-            this.players.every((player) => {
-              if (player.id === rId) {
-                this.player = player
-                return false
-              }
-              return true
-            })
-
-            Prize.findByName(this.$route.query.name).then((prize) => {
-              prize.done = true
-              prize.playerName = this.player.name
-              return prize.save()
-            }).catch((err) => {
-              this.$message.error('错误: ' + err.message)
-            }).then(() => {
-              this.bkgMp3.pause()
-              this.cheeringMp3.play()
-              this.resultsVisible = true
-            })
-          })
+          this.resume()
         }, 1500)
       })
     },
     dialogClosed() {
       this.cheeringMp3.pause()
+    },
+    animatePhotos() {
+      if (this.timer) {
+        clearTimeout(this.timer)
+      }
+      if (this.paused) {
+        return
+      }
+
+      let anima = () => {
+        if (this.lastElem) {
+          this.lastElem.hide()
+        }
+        let rId = Math.floor(Math.random() * this.players.length)
+        this.lastElem = $(`#iw-${rId}`).fadeIn()
+        if (!this.paused) {
+          this.lastElem.animateCss('inOut').then((elem) => {
+            elem.hide()
+            this.timer = setTimeout(anima, 10)
+          })
+        }
+      }
+      anima()
+    },
+    stopAnimatePhotos() {
+      if (this.timer) {
+        clearTimeout(this.timer)
+        this.timer = 0
+      }
+    },
+    pause() {
+      this.paused = true
+      $('.gift-icon').removeClass('animated rubberBand')
+      this.bkgMp3.pause()
+      this.stopAnimatePhotos()
+    },
+    resume() {
+      this.paused = false
+      $('.gift-icon').addClass('animated rubberBand')
+      this.bkgMp3.play()
+      this.animatePhotos()
+    },
+    autoPause() {
+      if (this.paused) {
+        this.resume()
+      } else {
+        this.pause()
+      }
+    },
+    keyboardHandler(evt) {
+      if (evt.code === 'Space') {
+        this.autoPause()
+      } else if (evt.code === 'Enter') {
+        if (this.paused && !this.done) {
+          return
+        }
+        if (!this.done) {
+          this.lottery()
+        } else if (!this.showPlayerName) {
+          this.showPlayerName = true
+        } else {
+          this.$router.back()
+        }
+      }
+    },
+    registerKeyboard() {
+      document.addEventListener('keydown', this.keyboardHandler)
+    },
+    unregisterKeyboard() {
+      document.removeEventListener('keydown', this.keyboardHandler)
+    },
+    lottery() {
+      this.pause()
+
+      let rId = Math.floor(Math.random() * this.players.length)
+      if (this.lastElem) {
+        this.lastElem.hide()
+      }
+      this.lastElem = $(`#iw-${rId}`).fadeIn()
+      this.players.every((player) => {
+        if (player.id === rId) {
+          this.player = player
+          return false
+        }
+        return true
+      })
+
+      Prize.findByName(this.$route.query.name).then((prize) => {
+        prize.done = true
+        prize.playerName = this.player.name
+        return prize.save()
+      }).then(() => {
+        this.cheeringMp3.play()
+        this.done = true
+        this.resultsVisible = true
+      }).catch((err) => {
+        this.$message.error('错误: ' + err.message)
+      })
     }
   }
 }
@@ -216,38 +271,6 @@ export default {
   width: 90vw;
   margin: 0 auto;
   padding: 20px 0;
-}
-
-.viewport.prize-run .players .el-col>img {
-  display: none;
-  width: 3em;
-  height: 3em;
-  border-radius: 50%;
-  cursor: pointer;
-  animation-duration: 0.8s;
-}
-
-.viewport.prize-run .players .el-col>img:hover {
-  animation-name: pulse;
-}
-
-@keyframes pulse {
-  from {
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-  50% {
-    -webkit-transform: scale3d(1.1, 1.1, 1.1);
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-  to {
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-}
-
-.viewport.prize-run .players .el-col>img.fadeIn {
-  animation-duration: 1.35s;
 }
 
 .viewport.prize-run .info {
@@ -286,5 +309,56 @@ export default {
 .viewport.prize-run .result .btns {
   margin-top: 20px;
   text-align: center;
+}
+
+.viewport.prize-run .photos {
+  width: 40vw;
+  margin: 0 auto;
+  height: 50vw;
+  line-height: 50vw;
+  border: 1px solid #ddd;
+  position: relative;
+  z-index: 100;
+  overflow: hidden;
+  text-align: center;
+}
+
+.viewport.prize-run .photos .img-wrap {
+  display: none;
+  height: 100%;
+  width: 100%;
+  line-height: 50vw;
+}
+
+@keyframes inOut {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+.viewport.prize-run .photos .img-wrap.inOut {
+  animation-duration: .35s;
+  animation-name: inOut;
+}
+
+.viewport.prize-run .photos img {
+  width: 100%;
+  vertical-align: middle;
+}
+
+.viewport.prize-run .tips {
+  width: 40vw;
+  margin: 0 auto;
+  color: #8492A6;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.viewport.prize-run .gift-icon {
+  display: inline-block;
+  animation-iteration-count: infinite;
 }
 </style>

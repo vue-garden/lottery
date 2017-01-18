@@ -38,12 +38,9 @@
                   {{ col.playerName }}
                 </el-col>
               </el-row>
-              <el-row type="flex" class="row-bg" justify="space-between" v-show="col.done">
+              <el-row type="flex" justify="end" v-show="col.done">
                 <el-col :span="11">
-                  <el-button type="danger" size="small" v-on:click="reopen(col.name)">重新开奖</el-button>
-                </el-col>
-                <el-col :span="11">
-                  <el-button type="warning" size="small" v-on:click="reset(col.name)">重置奖项</el-button>
+                  <el-button type="danger" size="small" v-on:click="reset(col.name)">重置奖项</el-button>
                 </el-col>
               </el-row>
             </div>
@@ -97,23 +94,6 @@ export default {
           name
         }
       })
-    },
-    reopen(name) {
-      this.$confirm('重新开奖将会覆盖上次的中奖结果, 上次中奖者将继续参与抽奖，是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        Prize.findByName(name).then((prize) => {
-          prize.playerName = ''
-          prize.done = false
-          return prize.save()
-        }).then(() => {
-          this.run(name)
-        }).catch((err) => {
-          this.$message.error('错误: ' + err.message)
-        })
-      }).catch(() => {})
     },
     reset(name) {
       this.$confirm('重置奖项将会清空上次的中奖结果，上次中奖者将可以参与下次抽奖, 是否继续?', '提示', {

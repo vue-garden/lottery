@@ -159,7 +159,7 @@ function createWindow() {
    */
   mainWindow = new BrowserWindow({
     height: 600,
-    width: 800
+    width: 980
   })
 
   mainWindow.loadURL(config.url)

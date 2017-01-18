@@ -13,10 +13,26 @@
           </el-input>
         </el-col>
         <el-col :span="6" :offset="12" class="add-btn-wrap">
+          <el-button type="primary" size="small" v-on:click="selectDir">
+            <i class="fa fa-folder-open"></i>
+          </el-button>
           <el-button type="primary" icon="plus" size="small" v-on:click="$router.push({name: 'player-add'})"></el-button>
         </el-col>
       </el-row>
     </section>
+
+    <el-dialog title="导入中" v-model="importDialogVisible" v-bind:show-close="importDialogClosable" v-bind:close-on-click-modal="importDialogClosable" v-bind:close-on-press-escape="importDialogClosable">
+      <div style="text-align: center;">
+        <el-progress type="circle" v-bind:percentage="importProgress"></el-progress>
+        <div v-show="importDone" style="margin-top: 10px;">
+          <div style="color: #13CE66;">成功 {{ importResult.success }}</div>
+          <div style="color: #FF4949;margin-top: 10px;">失败 {{ importResult.failed.length }}</div>
+          <div v-for="f in importResult.failed" style="margin-top: 10px; color: #FF4949; word-wrap: break-word;">
+            {{ f.file }} - {{ f.reason }}
+          </div>
+        </div>
+      </div>
+    </el-dialog>
 
     <el-table :data="tableData" border style="width: 100%">
       <el-table-column prop="name" label="姓名">
@@ -40,12 +56,23 @@
 
 <script>
 import Player from '../../model/Player'
+import {
+  remote
+} from 'electron'
 
 export default {
   data() {
     return {
       searchName: '',
-      tableData: []
+      tableData: [],
+      importDialogVisible: false,
+      importDialogClosable: false,
+      importDone: false,
+      importProgress: 0,
+      importResult: {
+        success: 0,
+        failed: []
+      }
     }
   },
   mounted() {
@@ -87,6 +114,26 @@ export default {
         })
       }).catch(() => {
 
+      })
+    },
+    selectDir() {
+      remote.dialog.showOpenDialog({
+        properties: ['openDirectory']
+      }, (files) => {
+        if (!files || files.length === 0) return
+
+        this.importDialogVisible = true
+        this.importDialogClosable = false
+        this.importProgress = 0
+        this.importDone = false
+        Player.importFromDir(files[0], (progress) => {
+          this.importProgress = progress * 100
+        }).then((result) => {
+          this.importResult = result
+          this.importDialogClosable = true
+          this.importDone = true
+          this.loadList()
+        })
       })
     }
   }
