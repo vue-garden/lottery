@@ -5,7 +5,7 @@
       <i class="el-icon-upload"></i>
       <div class="el-dragger__text">将图片拖到此处，或<em>点击选择</em></div>
     </div>
-    <img v-bind:src="dataUrl" v-show="dataUrl !== ''">
+    <img v-bind:src="dataUrl !== '' ? 'local://' + dataUrl : ''" v-show="dataUrl !== ''">
     <input type="file" style="display: none;" v-on:change="changed($event)">
   </label>
   <ul class="el-upload__files" v-show="file">
@@ -21,8 +21,16 @@
 
 <script>
 import {
-  readFileAsDataUrl
+  readAsArrayBuffer
 } from '../lib/h5-async-file-reader'
+
+import path from 'path'
+import config from '../config'
+import uuid from 'uuid/v4'
+
+const gm = require('gm').subClass({
+  imageMagick: true
+})
 
 export default {
   props: {
@@ -46,13 +54,24 @@ export default {
     changed(evt) {
       this.inputElem = evt.target
       this.file = evt.target.files[0]
-      readFileAsDataUrl(this.file).then((dataUrl) => {
-        this.dataUrl = dataUrl
-        this.file.dataUrl = dataUrl
-        let dot = this.file.name.lastIndexOf('.')
-        this.file.ext = this.file.name.slice(dot + 1)
 
-        this.cbChanged(this.file)
+      readAsArrayBuffer(this.file).then((buf) => {
+        let dot = this.file.name.lastIndexOf('.')
+        let ext = this.file.name.slice(dot + 1)
+        let to = path.join(config.photosDir, uuid() + '.' + ext)
+        buf = Buffer.from(buf)
+        gm(buf, this.file.name).autoOrient().write(to, (err) => {
+          if (err) throw err
+
+          this.dataUrl = to
+
+          let src = this.file.name
+          let dst = to
+          this.cbChanged({
+            src,
+            dst
+          })
+        })
       })
     },
     removeFile() {

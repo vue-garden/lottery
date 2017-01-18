@@ -117,11 +117,10 @@ export default class Prize {
     for (let i = 0, len = files.length; i < len; i++) {
       let file = path.join(dir, files[i])
       try {
-        let fileData = await fs.readFile(file)
         let parsed = path.parse(file)
 
         let outPath = path.join(config.photosDir, uuid() + parsed.ext)
-        await fs.writeFile(outPath, fileData)
+        await fs.readImageAndAutoOrient(file, outPath)
 
         let [prizeName, giftName, giftPrice] = parsed.name.split('@')
         if (!giftName) {

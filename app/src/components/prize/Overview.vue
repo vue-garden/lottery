@@ -137,12 +137,13 @@ export default {
 }
 
 .viewport.prize-overview .el-card img {
-  width: 100%;
+  height: 100%;
 }
 
 .viewport.prize-overview .el-card .img-wrap {
   height: 20vh;
   overflow: hidden;
+  text-align: center;
 }
 
 .viewport.prize-overview .el-row {

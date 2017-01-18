@@ -107,11 +107,10 @@ export default class Player {
     for (let i = 0, len = files.length; i < len; i++) {
       let file = path.join(dir, files[i])
       try {
-        let fileData = await fs.readFile(file)
         let parsed = path.parse(file)
 
         let outPath = path.join(config.photosDir, uuid() + parsed.ext)
-        await fs.writeFile(outPath, fileData)
+        await fs.readImageAndAutoOrient(file, outPath)
 
         await this.add(parsed.name, outPath)
         ret.success++

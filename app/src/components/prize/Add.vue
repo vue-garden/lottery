@@ -40,19 +40,16 @@ export default {
         name: '',
         giftName: '',
         giftPrice: 0,
-        giftPhotoDataUrl: '',
-        giftPhotoExt: ''
+        giftPhotoSrc: ''
       }
     }
   },
   methods: {
-    fileChanged(file) {
-      this.form.giftPhotoDataUrl = file.dataUrl
-      this.form.giftPhotoExt = file.ext
+    fileChanged(result) {
+      this.form.giftPhotoSrc = result.dst
     },
     fileRemoved() {
-      this.form.giftPhotoDataUrl = ''
-      this.form.giftPhotoExt = ''
+      this.form.giftPhotoSrc = ''
     },
     save() {
       if (this.form.name === '') {
@@ -63,7 +60,7 @@ export default {
         this.$message.error('请输入奖品名称')
         return
       }
-      if (this.form.giftPhotoDataUrl === '') {
+      if (this.form.giftPhotoSrc === '') {
         this.$message.error('请选择奖品图片')
         return
       }

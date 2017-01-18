@@ -32,8 +32,7 @@ export default {
     return {
       form: {
         name: '',
-        photoSrc: '',
-        photoExt: ''
+        photoSrc: ''
       }
     }
   },
@@ -42,13 +41,11 @@ export default {
       console.log(file)
       return false
     },
-    fileChanged(file) {
-      this.form.photoSrc = file.dataUrl
-      this.form.photoExt = file.ext
+    fileChanged(result) {
+      this.form.photoSrc = result.dst
     },
     fileRemoved() {
       this.form.photoSrc = ''
-      this.form.photoExt = ''
     },
     save() {
       if (this.form.name === '') {
@@ -60,21 +57,15 @@ export default {
         return
       }
 
-      Player.savePhoto(this.form.photoSrc, this.form.photoExt).then((filePath) => {
-        Player.add(this.form.name, filePath).then(() => {
-          this.$message({
-            message: '操作成功',
-            type: 'success',
-            onClose: () => {
-              this.$router.back()
-            }
-          })
-        }, (err) => {
-          this.$message.error('操作失败: ' + err.message)
+      Player.add(this.form.name, this.form.photoSrc).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success',
+          onClose: () => {
+            this.$router.back()
+          }
         })
       }, (err) => {
-        this.$message.error('操作失败: ' + err.message)
-      }).catch((err) => {
         this.$message.error('操作失败: ' + err.message)
       })
     }

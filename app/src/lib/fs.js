@@ -1,4 +1,7 @@
 const fs = require('fs')
+const gm = require('gm').subClass({
+  imageMagick: true
+})
 
 module.exports = {
   readFile: (file, options = null) => {
@@ -39,6 +42,15 @@ module.exports = {
         if (err)
           throw err
         resolve(files)
+      })
+    })
+  },
+  readImageAndAutoOrient: (src, dst) => {
+    return new Promise((resolve) => {
+      gm(src).autoOrient().write(dst, (err) => {
+        if (err)
+          throw err
+        resolve()
       })
     })
   }
