@@ -291,10 +291,10 @@ export default {
 .viewport.prize-run .result .img-wrap {
   display: block;
   margin: 0 auto;
-  width: 30vw;
-  height: 30vw;
-  line-height: 30vw;
-  border-radius: 30vw;
+  width: 35vh;
+  height: 35vh;
+  line-height: 35vh;
+  border-radius: 35vh;
   margin-top: 20px;
   overflow: hidden;
   text-align: center;
@@ -312,10 +312,10 @@ export default {
 }
 
 .viewport.prize-run .photos {
-  width: 40vw;
+  width: 35vw;
   margin: 0 auto;
-  height: 50vw;
-  line-height: 50vw;
+  height: 60vh;
+  line-height: 60vh;
   border: 1px solid #ddd;
   position: relative;
   z-index: 100;
@@ -327,7 +327,7 @@ export default {
   display: none;
   height: 100%;
   width: 100%;
-  line-height: 50vw;
+  line-height: 60vh;
 }
 
 @keyframes inOut {
@@ -350,7 +350,7 @@ export default {
 }
 
 .viewport.prize-run .tips {
-  width: 40vw;
+  width: 35vw;
   margin: 0 auto;
   color: #8492A6;
   font-size: 14px;
