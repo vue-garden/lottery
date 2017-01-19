@@ -328,26 +328,25 @@ export default {
   height: 100%;
   width: 100%;
   line-height: 60vh;
+  text-align: center;
 }
 
 @keyframes inOut {
   from {
     opacity: 1;
-    /*transform: translate3d(100%, 0, 0);*/
   }
   to {
     opacity: 0;
-    /*transform: translate3d(-100%, 0, 0);*/
   }
 }
 
 .viewport.prize-run .photos .img-wrap.inOut {
-  animation-duration: .35s;
+  animation-duration: 1.35s;
   animation-name: inOut;
 }
 
 .viewport.prize-run .photos img {
-  width: 100%;
+  height: 100%;
   vertical-align: middle;
 }
 
