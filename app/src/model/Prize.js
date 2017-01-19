@@ -94,6 +94,11 @@ export default class Prize {
     await this.sync()
   }
 
+  static async deleteAll() {
+    list = []
+    await this.sync()
+  }
+
   static async sync() {
     await fs.writeFile(config.prizesJSONFile, JSON.stringify(list, null, 4))
   }
@@ -124,8 +129,12 @@ export default class Prize {
 
         let b = await fs.readFile(file)
         let ab = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)
+        let m = mime.lookup(file)
+        if (m === 'application/octet-stream') {
+          throw new Error('Unsupported image type')
+        }
         let blob = new Blob([ab], {
-          type: mime.lookup(file)
+          type: m
         })
         await fs.readImageAndAutoOrient(blob, outPath)
 

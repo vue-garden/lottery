@@ -17,6 +17,7 @@
             <i class="fa fa-folder-open"></i>
           </el-button>
           <el-button type="primary" icon="plus" size="small" v-on:click="$router.push({name: 'player-add'})"></el-button>
+          <el-button type="danger" icon="delete" size="small" v-on:click="deleteAll"></el-button>
         </el-col>
       </el-row>
     </section>
@@ -116,6 +117,23 @@ export default {
 
       })
     },
+    deleteAll() {
+      this.$confirm('确定删除所有?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        Player.deleteAll().then(() => {
+          this.$message({
+            type: 'success',
+            message: '删除成功'
+          })
+          this.loadList()
+        })
+      }).catch(() => {
+
+      })
+    },
     selectDir() {
       remote.dialog.showOpenDialog({
         properties: ['openDirectory']
@@ -176,7 +194,7 @@ export default {
   margin: 10px 0;
 }
 
-.viewport.player-list .el-icon-delete {
+.viewport.player-list .el-table__body .el-icon-delete {
   color: #8492a6;
   margin: 0 20px;
   font-size: 1.5em;

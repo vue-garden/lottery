@@ -40,13 +40,22 @@ module.exports = {
       fs.readdir(dir, (err, files) => {
         if (err)
           throw err
-        resolve(files)
+        let ret = []
+        files.forEach((f) => {
+          if (f.indexOf('.') !== 0) {
+            ret.push(f)
+          }
+        })
+        resolve(ret)
       })
     })
   },
   readImageAndAutoOrient: (blob, dst) => {
     return new Promise((resolve) => {
-      loadImage(blob, (canvas) => {
+      let loadingImage = loadImage(blob, (canvas) => {
+        if (!canvas.toDataURL) {
+          throw new Error('Failed to auto orient image')
+        }
         let dataUrl = canvas.toDataURL()
         let buf = new Buffer(dataUrl.replace(/^data:image\/(png|gif|jpg|jpeg);base64,/, ''), 'base64')
         fs.writeFile(dst, buf, (err) => {

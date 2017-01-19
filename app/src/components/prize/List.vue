@@ -11,6 +11,7 @@
         <i class="fa fa-folder-open"></i>
       </el-button>
       <el-button type="primary" icon="plus" size="small" v-on:click="$router.push({name: 'prize-add'})"></el-button>
+      <el-button type="danger" icon="delete" size="small" v-on:click="deleteAll"></el-button>
     </section>
 
     <el-dialog title="导入中" v-model="importDialogVisible" v-bind:show-close="importDialogClosable" v-bind:close-on-click-modal="importDialogClosable" v-bind:close-on-press-escape="importDialogClosable">
@@ -96,6 +97,23 @@ export default {
 
       })
     },
+    deleteAll() {
+      this.$confirm('确定删除所有?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        Prize.deleteAll().then(() => {
+          this.$message({
+            type: 'success',
+            message: '删除成功'
+          })
+          this.loadList()
+        })
+      }).catch(() => {
+
+      })
+    },
     selectDir() {
       remote.dialog.showOpenDialog({
         properties: ['openDirectory']
@@ -150,7 +168,7 @@ export default {
   margin: 10px 0;
 }
 
-.viewport.prize-list .el-icon-delete {
+.viewport.prize-list .el-table__body .el-icon-delete {
   color: #8492a6;
   margin: 0 20px;
   font-size: 1.5em;
